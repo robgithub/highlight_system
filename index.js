@@ -2,6 +2,8 @@
  *
  * uses highlight.js and expects the html to fairly strict
  *
+ * overwrites filename
+ *
  * Rob 2022-04-10
  *
  */
@@ -29,18 +31,36 @@ function highlightCode(html) {
   while(match = pattern.exec(html)){
     source = replaceCodeForHighlight(match, source);
   }
-  console.log(source);
+  return source;
 }
+
+function writeFile(fn, content) {
+  fs.writeFile(fn, content, err => {
+    if (err) {
+      console.error(err)
+      return false
+    }
+    return true
+  })
+}
+
 
 function processFile(fn) {
   //console.log('processing');
+  var result = null;
   fs.readFile(fn, 'utf8', function (err, data) {
     if (err) {
-      console.log("Cannot load[" + fn + "] " + err); 
+      console.error("Cannot load[" + fn + "] " + err); 
       exit(2);
     } else {
       //console.log('data loaded');
-      highlightCode(data);
+      result = highlightCode(data);
+      if (result) {
+        return writeFile(fn, result);
+      } else {
+        console.error(result + 'result falsy, no data written to file');
+        return false
+      }
     }
   });
 }
@@ -48,9 +68,10 @@ function processFile(fn) {
 if (process.argv.length > 2) {
   let inputFn = process.argv[2];
   //console.log('Opening file "' + inputFn + '"');
-  processFile(inputFn);
+  var ok = processFile(inputFn);
+  // readFile is is async, so do not expect to get a return value
 } else {
-  console.log('Filename not provided');
+  console.error('Filename not provided');
   exit(1);
 }
 
