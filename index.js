@@ -12,13 +12,18 @@
 const fs = require('fs');
 const hljs = require('highlight.js');
 
+// from https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 function replaceCodeForHighlight(match, source) {
   var result = null;
   var target = match[1];
   var destination = hljs.highlightAuto(target).value;
   //console.log('target' + target);
   //console.log('destination' + destination);
-  var pattern = new RegExp(match[0], 's');
+  var pattern = new RegExp(escapeRegExp(match[0]), 's');
   result = source.replace(pattern, '<code class="nohighlight">' + destination + '</code>')
   //console.log('result' + result);
   return result;
@@ -74,4 +79,3 @@ if (process.argv.length > 2) {
   console.error('Filename not provided');
   exit(1);
 }
-
